@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot</title>
+    <link rel="icon" href="/static/logo.svg" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --krem: #fffaf6;
+        --pembe: #ec4899;
+        --koyu-pembe: #be185d;
+        --acik-pembe: #fce7f3;
+        --gold: #c9a24a;
+        --acik-gold: #f3e6c8;
+        --yazi: #3f3a3f;
+        --soluk: #9a8f96;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: "Poppins", sans-serif;
+        color: var(--yazi);
+        background:
+          radial-gradient(
+            circle at 0% 0%,
+            rgba(236, 72, 153, 0.1),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 100% 100%,
+            rgba(201, 162, 74, 0.12),
+            transparent 40%
+          ),
+          var(--krem);
+      }
+
+      /* ---------- Üst çubuk ---------- */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 28px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: white;
+        font-size: 16px;
+        background: linear-gradient(135deg, var(--pembe), var(--gold));
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+      }
+      img.logo-icon {
+        background: none;
+        box-shadow: none;
+        border-radius: 0;
+        width: 38px;
+        height: 38px;
+      }
+      .logo-name {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        color: var(--koyu-pembe);
+      }
+      #clear-btn {
+        background: white;
+        border: 1px solid var(--acik-gold);
+        color: var(--soluk);
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      #clear-btn:hover {
+        color: var(--koyu-pembe);
+        border-color: var(--gold);
+      }
+
+      /* ---------- Sohbet alanı ---------- */
+      #chat {
+        flex: 1;
+        overflow-y: auto;
+        width: 100%;
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      /* Karşılama ekranı */
+      #welcome {
+        margin: auto;
+        text-align: center;
+      }
+      #welcome h2 {
+        font-family: "Playfair Display", serif;
+        font-weight: 500;
+        font-size: 40px;
+        margin: 0 0 8px;
+        background: linear-gradient(90deg, var(--koyu-pembe), var(--gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      #welcome p {
+        color: var(--soluk);
+        margin: 0 0 28px;
+      }
+      .suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+      .suggestion {
+        background: white;
+        border: 1px solid var(--acik-gold);
+        border-radius: 14px;
+        padding: 10px 16px;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--yazi);
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .suggestion:hover {
+        border-color: var(--pembe);
+        box-shadow: 0 4px 14px rgba(236, 72, 153, 0.15);
+        transform: translateY(-2px);
+      }
+
+      /* Mesajlar */
+      .msg {
+        line-height: 1.65;
+        white-space: pre-wrap;
+        font-size: 15px;
+      }
+      .msg.user {
+        align-self: flex-end;
+        max-width: 75%;
+        background: var(--acik-pembe);
+        color: #831843;
+        padding: 11px 18px;
+        border-radius: 20px 20px 6px 20px;
+      }
+      .bot-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .bot-row .logo-icon {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+      .msg.bot {
+        padding-top: 3px;
+        max-width: 90%;
+      }
+
+      /* ---------- Yazı kutusu ---------- */
+      #chat-form {
+        width: 100%;
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 0 24px 10px;
+      }
+      .input-card {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        background: white;
+        border: 1px solid var(--acik-gold);
+        border-radius: 26px;
+        padding: 10px 10px 10px 20px;
+        box-shadow: 0 8px 30px rgba(190, 24, 93, 0.08);
+        transition: 0.2s;
+      }
+      .input-card:focus-within {
+        border-color: var(--gold);
+        box-shadow: 0 8px 30px rgba(201, 162, 74, 0.2);
+      }
+      #user-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        resize: none;
+        overflow: hidden;
+        height: 26px;
+        max-height: 160px;
+        padding: 6px 0;
+        font-family: inherit;
+        font-size: 15px;
+        color: var(--yazi);
+        background: transparent;
+      }
+      #user-input::placeholder {
+        color: var(--soluk);
+      }
+      #send-btn {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--pembe), var(--gold));
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      #send-btn:hover {
+        transform: scale(1.08);
+      }
+      #send-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+        transform: none;
+      }
+      .footer-note {
+        text-align: center;
+        font-size: 12px;
+        color: var(--soluk);
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img class="logo-icon" src="/static/logo.svg" alt="END logo" />
+        <span class="logo-name">Chatbot</span>
+      </div>
+      <button id="clear-btn">Yeni sohbet</button>
+    </header>
+
+    <main id="chat">
+      <div id="welcome">
+        <h2>Merhaba ✨</h2>
+        <p>Bugün ne konuşmak istersin?</p>
+        <div class="suggestions">
+          <button class="suggestion">Bana motive edici bir söz söyle</button>
+          <button class="suggestion">Python'da liste nasıl sıralanır?</button>
+          <button class="suggestion">Hafta sonu için film öner</button>
+        </div>
+      </div>
+    </main>
+
+    <form id="chat-form">
+      <div class="input-card">
+        <textarea
+          id="user-input"
+          placeholder="Mesajını yaz..."
+          rows="1"
+        ></textarea>
+        <button type="submit" id="send-btn">↑</button>
+      </div>
+      <div class="footer-note">Qwen3.8 Flash · OpenRouter</div>
+    </form>
+    <script>
+      const chat = document.getElementById("chat");
+      const form = document.getElementById("chat-form");
+      const input = document.getElementById("user-input");
+      const sendBtn = document.getElementById("send-btn");
+      const welcome = document.getElementById("welcome");
+
+      let messages = [];
+
+      function addMessage(role, text) {
+        welcome.style.display = "none";
+
+        const bubble = document.createElement("div");
+        bubble.className = "msg " + role;
+        bubble.textContent = text;
+
+        if (role === "user") {
+          chat.appendChild(bubble);
+        } else {
+          const row = document.createElement("div");
+          row.className = "bot-row";
+          row.innerHTML =
+            '<img class="logo-icon" src="/static/logo.svg" alt="">';
+          row.appendChild(bubble);
+          chat.appendChild(row);
+        }
+
+        chat.scrollTop = chat.scrollHeight;
+        return bubble;
+      }
+
+      async function sendMessage(text) {
+        text = text.trim();
+        if (!text) return;
+
+        addMessage("user", text);
+        messages.push({ role: "user", content: text });
+        input.value = "";
+        sendBtn.disabled = true;
+
+        const botBubble = addMessage("bot", "Yazıyor...");
+
+        try {
+          const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: messages }),
+          });
+          const data = await res.json();
+
+          if (data.error) {
+            botBubble.textContent = "⚠️ Hata: " + data.error;
+            messages.pop();
+          } else {
+            botBubble.textContent = data.answer;
+            messages.push({ role: "assistant", content: data.answer });
+          }
+        } catch (err) {
+          botBubble.textContent =
+            "⚠️ Sunucuya ulaşılamadı. app.py çalışıyor mu?";
+          messages.pop();
+        }
+
+        chat.scrollTop = chat.scrollHeight;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        sendMessage(input.value);
+      });
+
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage(input.value);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request, jsonify, render_template
 
 load_dotenv()
 
@@ -24,3 +24,23 @@ def ask_model(messages, model=MODEL):
     response.raise_for_status()
     data = response.json()
     return data["choices"][0]["message"]["content"]
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    messages = data.get("messages", [])
+    try:
+        answer = ask_model(messages)
+        return jsonify({"answer": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
