@@ -11,6 +11,17 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 app = Flask(__name__)
 
+PERSONA_PATH = os.path.join(os.path.dirname(__file__), "persona.txt")
+
+
+def load_persona():
+    try:
+        with open(PERSONA_PATH, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Sen yardımsever bir asistansın. Her zaman Türkçe cevap ver."
+
+
 def ask_model(messages, model=MODEL):
     response = requests.post(
         OPENROUTER_URL,
@@ -34,7 +45,7 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    messages = data.get("messages", [])
+    messages = [{"role": "system", "content": load_persona()}] + data.get("messages", [])
     try:
         answer = ask_model(messages)
         return jsonify({"answer": answer})

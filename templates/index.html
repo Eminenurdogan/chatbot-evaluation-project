@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chatbot</title>
+    <title>Aura</title>
     <link rel="icon" href="/static/logo.svg" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <style>
       :root {
         --krem: #fffaf6;
@@ -182,6 +184,57 @@
         max-width: 90%;
       }
 
+      /* ---------- Bot mesajlarında Markdown ---------- */
+      .msg.bot {
+        white-space: normal;
+      }
+      .msg.bot p {
+        margin: 0 0 10px;
+      }
+      .msg.bot p:last-child {
+        margin-bottom: 0;
+      }
+      .msg.bot ul,
+      .msg.bot ol {
+        margin: 0 0 10px;
+        padding-left: 22px;
+      }
+      .msg.bot li {
+        margin-bottom: 4px;
+      }
+      .msg.bot strong {
+        color: var(--koyu-pembe);
+        font-weight: 600;
+      }
+      .msg.bot h1,
+      .msg.bot h2,
+      .msg.bot h3 {
+        font-size: 1.1em;
+        margin: 14px 0 8px;
+        color: var(--koyu-pembe);
+      }
+      .msg.bot code {
+        background: var(--acik-pembe);
+        color: #831843;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 0.9em;
+      }
+      .msg.bot pre {
+        background: #2d2430;
+        color: #fce7f3;
+        padding: 14px 16px;
+        border-radius: 12px;
+        overflow-x: auto;
+        margin: 0 0 10px;
+      }
+      .msg.bot pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+      }
+
       /* ---------- Yazı kutusu ---------- */
       #chat-form {
         width: 100%;
@@ -191,7 +244,7 @@
       }
       .input-card {
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         gap: 10px;
         background: white;
         border: 1px solid var(--acik-gold);
@@ -211,8 +264,9 @@
         resize: none;
         overflow: hidden;
         height: 26px;
+        line-height: 26px;
         max-height: 160px;
-        padding: 6px 0;
+        padding: 0;
         font-family: inherit;
         font-size: 15px;
         color: var(--yazi);
@@ -247,22 +301,13 @@
         color: var(--soluk);
         margin-top: 8px;
       }
-      /* ---------- Yazı kutusu hizalama ---------- */
-      .input-card {
-        align-items: center;
-      }
-      #user-input {
-        height: 26px;
-        line-height: 26px;
-        padding: 0;
-      }
     </style>
   </head>
   <body>
     <header>
       <div class="logo">
-        <img class="logo-icon" src="/static/logo.svg" alt="END logo" />
-        <span class="logo-name">Chatbot</span>
+        <img class="logo-icon" src="/static/logo.svg" alt="Aura logo" />
+        <span class="logo-name">Aura</span>
       </div>
       <button id="clear-btn">Yeni sohbet</button>
     </header>
@@ -270,11 +315,13 @@
     <main id="chat">
       <div id="welcome">
         <h2>Merhaba ✨</h2>
-        <p>Bugün ne konuşmak istersin?</p>
+        <p>Ben Aura. Bugün ne üzerinde çalışalım, Emine?</p>
         <div class="suggestions">
-          <button class="suggestion">Bana motive edici bir söz söyle</button>
-          <button class="suggestion">Python'da liste nasıl sıralanır?</button>
-          <button class="suggestion">Hafta sonu için film öner</button>
+          <button class="suggestion">Bana bir yapay zekâ kavramı öğret</button>
+          <button class="suggestion">
+            Siber güvenlikte bugün ne çalışalım?
+          </button>
+          <button class="suggestion">Python kodumu incele</button>
         </div>
       </div>
     </main>
@@ -283,12 +330,12 @@
       <div class="input-card">
         <textarea
           id="user-input"
-          placeholder="Mesajını yaz..."
+          placeholder="Aura'ya yaz..."
           rows="1"
         ></textarea>
         <button type="submit" id="send-btn">↑</button>
       </div>
-      <div class="footer-note">Qwen3.8 Flash · OpenRouter</div>
+      <div class="footer-note">Aura · Claude Haiku 5.5 · OpenRouter</div>
     </form>
     <script>
       const chat = document.getElementById("chat");
@@ -299,6 +346,11 @@
       const clearBtn = document.getElementById("clear-btn");
 
       let messages = [];
+
+      // ---------- Markdown -> güvenli HTML ----------
+      function renderMarkdown(element, text) {
+        element.innerHTML = DOMPurify.sanitize(marked.parse(text));
+      }
 
       // ---------- Kaydetme / yükleme ----------
       function saveChat() {
@@ -320,11 +372,12 @@
 
         const bubble = document.createElement("div");
         bubble.className = "msg " + role;
-        bubble.textContent = text;
 
         if (role === "user") {
+          bubble.textContent = text;
           chat.appendChild(bubble);
         } else {
+          renderMarkdown(bubble, text);
           const row = document.createElement("div");
           row.className = "bot-row";
           row.innerHTML =
@@ -361,7 +414,7 @@
             botBubble.textContent = "⚠️ Hata: " + data.error;
             messages.pop();
           } else {
-            botBubble.textContent = data.answer;
+            renderMarkdown(botBubble, data.answer);
             messages.push({ role: "assistant", content: data.answer });
             saveChat();
           }
